@@ -69,6 +69,22 @@ public class GradeBookController {
 		return grades;
 	}
 	
+	@GetMapping("/gradebook/all") // Should return and display all the grades not just a specific student 
+	public List<GradeDTO> getAllGrades(){
+		String email = "dwisneski@csumb.edu";
+		Iterable<AssignmentGrade> allAssignmentGrades = assignmentGradeRepository.findAll();
+		List<GradeDTO> grades = new ArrayList<>();
+		
+		for (AssignmentGrade AGrade : allAssignmentGrades) {
+			Assignment assignment = AGrade.getAssignment();
+			if (assignment != null && assignment.getCourse().getInstructor().equals(email)) {
+				grades.add(new GradeDTO(AGrade.getId(), AGrade.getStudentEnrollment().getStudentName(), AGrade.getStudentEnrollment().getStudentEmail(), AGrade.getScore()));	
+			}
+		}
+		
+		return grades;
+	}
+	
 	/* 
 	 * calculate final grades.  Send final grades to registration to post to student enrollments
 	 * average the student's non-null assignment grades and convert to letter grade
@@ -103,7 +119,7 @@ public class GradeBookController {
 	}
 
 	/*
-	 * update gradebook for an assignment with grades entered
+	 * update grade-book for an assignment with grades entered
 	 * id - assignment id
 	 */
 	@PutMapping("/gradebook/{id}")
