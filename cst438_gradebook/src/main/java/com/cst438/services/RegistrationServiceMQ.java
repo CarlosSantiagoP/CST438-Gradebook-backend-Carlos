@@ -73,8 +73,10 @@ public class RegistrationServiceMQ implements RegistrationService {
 			EnrollmentDTO enrollmentDTO = objectMapper.readValue(message, EnrollmentDTO.class);
 
 			Enrollment enrollment = new Enrollment();
+			enrollment.setId(enrollmentDTO.id());
 			enrollment.setStudentName(enrollmentDTO.studentName());
 			enrollment.setStudentEmail(enrollmentDTO.studentEmail());
+//			enrollment.setCourse(enrollmentDTO.courseId());
 
 			enrollmentRepository.save(enrollment);
 		} catch (JsonProcessingException e) {
@@ -87,8 +89,8 @@ public class RegistrationServiceMQ implements RegistrationService {
 	 */
 	@Override
 	public void sendFinalGrades(int course_id, FinalGradeDTO[] grades) {
-		String url = "http://localhost:8081/course/" + course_id;
-		restTemplate.put(url, grades);
+//		String url = "http://localhost:8081/course/" + course_id + "/final-grades/";
+//		restTemplate.put(url, grades);
 	}
 	
 	private static String asJsonString(final Object obj) {
