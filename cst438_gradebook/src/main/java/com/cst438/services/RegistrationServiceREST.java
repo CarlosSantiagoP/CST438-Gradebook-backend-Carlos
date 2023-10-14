@@ -37,7 +37,8 @@ public class RegistrationServiceREST implements RegistrationService {
 	@Override
 	public void sendFinalGrades(int course_id , FinalGradeDTO[] grades) {
 
-		restTemplate.put(registration_url + "/course" + course_id, grades);
+		System.out.println("Failing point 1");
+		restTemplate.put(registration_url + "/" + course_id, grades);
 
 	}
 
