@@ -1,17 +1,12 @@
 package com.cst438.services;
 
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.JsonMappingException;
 import org.springframework.amqp.core.Queue;
 import org.springframework.amqp.rabbit.annotation.RabbitListener;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
-import org.springframework.http.HttpEntity;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.MediaType;
+import org.springframework.context.annotation.Bean;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -22,12 +17,6 @@ import com.cst438.domain.Enrollment;
 import com.cst438.domain.EnrollmentDTO;
 import com.cst438.domain.EnrollmentRepository;
 import com.fasterxml.jackson.databind.ObjectMapper;
-
-//import org.springframework.http.HttpEntity;
-//import org.springframework.http.HttpHeaders;
-//import org.springframework.http.MediaType;
-import org.springframework.web.client.RestTemplate;
-import org.springframework.context.annotation.Bean;
 
 @Service
 @ConditionalOnProperty(prefix = "registration", name = "service", havingValue = "mq")
@@ -42,10 +31,6 @@ public class RegistrationServiceMQ implements RegistrationService {
 	@Autowired
 	private RabbitTemplate rabbitTemplate;
 
-	@Value("${registration.url}")
-	String registration_url;
-
-	RestTemplate restTemplate = new RestTemplate();
 
 	public RegistrationServiceMQ() {
 		System.out.println("MQ registration service ");
@@ -64,35 +49,37 @@ public class RegistrationServiceMQ implements RegistrationService {
 	@RabbitListener(queues = "gradebook-queue")
 	@Transactional
 	public void receive(String message) {
-		
-		System.out.println("Gradebook has received: " + message);
+		System.out.println("Gradebook has received: "+message);
+		EnrollmentDTO dto = fromJsonString(message, EnrollmentDTO.class);
+		System.out.println(dto.toString());
 
-		//TODO  deserialize message to EnrollmentDTO and update database
-		try {
-			ObjectMapper objectMapper = new ObjectMapper();
-			EnrollmentDTO enrollmentDTO = objectMapper.readValue(message, EnrollmentDTO.class);
-
+		Course course = courseRepository.findById(dto.courseId()).orElse(null);
+		if (course==null) {
+			System.out.println("Error. Student add to course. course not found "+dto.toString());
+		} else {
 			Enrollment enrollment = new Enrollment();
-			enrollment.setId(enrollmentDTO.id());
-			enrollment.setStudentName(enrollmentDTO.studentName());
-			enrollment.setStudentEmail(enrollmentDTO.studentEmail());
-//			enrollment.setCourse(enrollmentDTO.courseId());
-
+			enrollment.setCourse(course);
+			enrollment.setStudentEmail(dto.studentEmail());
+			enrollment.setStudentName(dto.studentName());
 			enrollmentRepository.save(enrollment);
-		} catch (JsonProcessingException e) {
-            throw new RuntimeException(e);
-        }
-    }
+			System.out.println("End receive enrollment.");
+		}
+	}
 
 	/*
-	 * Send final grades to Registration Service 
+	 * Send final grades to Registration Service
 	 */
 	@Override
 	public void sendFinalGrades(int course_id, FinalGradeDTO[] grades) {
-//		String url = "http://localhost:8081/course/" + course_id + "/final-grades/";
-//		restTemplate.put(url, grades);
+
+		System.out.println("Start sendFinalGrades "+course_id);
+		String message = asJsonString(grades);
+		System.out.println(message);
+		rabbitTemplate.convertAndSend(registrationQueue.getName(), message);
+		System.out.println("End sendFinalGrades ");
+
 	}
-	
+
 	private static String asJsonString(final Object obj) {
 		try {
 			return new ObjectMapper().writeValueAsString(obj);
