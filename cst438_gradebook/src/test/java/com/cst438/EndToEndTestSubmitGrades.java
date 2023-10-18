@@ -50,7 +50,7 @@ public class EndToEndTestSubmitGrades {
 		// FireFox 	webdriver.firefox.driver 	FirefoxDriver
 		// IE 		webdriver.ie.driver 		InternetExplorerDriver
 		//@formatter:on
-		
+
 		/*
 		 * initialize the WebDriver and get the home page. 
 		 */
@@ -69,7 +69,7 @@ public class EndToEndTestSubmitGrades {
 		try {
 			/*
 			* locate the <td> element for assignment title 'db design'
-			* 
+			*
 			*/
 			
 			List<WebElement> elements  = driver.findElements(By.xpath("//td"));
@@ -159,4 +159,53 @@ public class EndToEndTestSubmitGrades {
 		}
 
 	}
+
+	@Test
+	public void updateGradeTest() throws Exception {
+		try {
+			WebElement gradeInput = Thread.findElement(By.id("grade-input-id")); // Replace with the actual ID
+
+//			Delete the current values
+			gradeInput.clear();
+			gradeInput.sendKeys("NewGrade");
+
+//			Find the button
+			Thread.findElement(By.id("update-button-id")).click(); // Replace with the actual ID
+
+//			Check for update
+			WebElement messageElement = Thread.findElement(By.id("Grade has been updated"));
+			assertThat(messageElement.getText()).isEqualTo("Grade updated successfully");
+
+		} catch (Exception e) {
+			throw e;
+		}finally {
+			Thread.quit(); //
+		}
+
+	}
+
+	@Test
+	public void deleteGradeTest() throws Exception {
+		// Initialize the WebDriver and navigate to the page
+
+		try {
+			// Locate the assignment you want to delete (similar to your existing code)
+			// Click on the assignment to open it
+
+			// Find the delete button and click it
+			Thread.findElement(By.id("delete-button-id")).click(); // Replace with the actual ID
+
+			// Handle any confirmation dialog or confirmation process
+
+			// Verify that the grade has been deleted
+			WebElement messageElement = Thread.findElement(By.id("Deletion complete"));
+			assertThat(messageElement.getText()).isEqualTo("Grade deleted successfully");
+
+		} catch (Exception ex) {
+			throw ex;
+		} finally {
+			Thread.quit();
+		}
+	}
+
 }

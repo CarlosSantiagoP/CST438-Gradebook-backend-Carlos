@@ -59,7 +59,6 @@ public class Enrollment {
 	public void setCourse(Course course) {
 		this.course = course;
 	}
-	
 
 	public List<AssignmentGrade> getAssignmentGrades() {
 		return assignmentGrades;
@@ -75,6 +74,5 @@ public class Enrollment {
 				+ course + "]";
 	}
 
-	
-	
+
 }

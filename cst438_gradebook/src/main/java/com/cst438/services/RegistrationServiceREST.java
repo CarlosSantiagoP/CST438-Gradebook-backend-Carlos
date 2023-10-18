@@ -17,28 +17,31 @@ import com.cst438.domain.EnrollmentDTO;
 import com.cst438.domain.EnrollmentRepository;
 import com.cst438.domain.Enrollment;
 
+import java.util.List;
+import java.util.Optional;
+
 @Service
 @ConditionalOnProperty(prefix = "registration", name = "service", havingValue = "rest")
 @RestController
 public class RegistrationServiceREST implements RegistrationService {
 
-	
 	RestTemplate restTemplate = new RestTemplate();
-	
-	@Value("${registration.url}") 
+
+	@Value("${registration.url}")
 	String registration_url;
-	
+
 	public RegistrationServiceREST() {
 		System.out.println("REST registration service ");
 	}
-	
+
 	@Override
-	public void sendFinalGrades(int course_id , FinalGradeDTO[] grades) { 
-		
-		restTemplate.postForObject(registration_url + "/final-grades/" + course_id, grades, Void.class);
+	public void sendFinalGrades(int course_id , FinalGradeDTO[] grades) {
+
+		System.out.println("Failing point 1");
+		restTemplate.put(registration_url + "/" + course_id, grades);
 
 	}
-	
+
 	@Autowired
 	CourseRepository courseRepository;
 
@@ -53,22 +56,17 @@ public class RegistrationServiceREST implements RegistrationService {
 	@PostMapping("/enrollment")
 	@Transactional
 	public EnrollmentDTO addEnrollment(@RequestBody EnrollmentDTO enrollmentDTO) {
-		// Receive message from registration service to enroll a student into a course.
 		System.out.println("GradeBook addEnrollment " + enrollmentDTO);
 
-		// Find the course by ID or however you get it
 		Course course = courseRepository.findById(enrollmentDTO.courseId()).orElse(null);
 
-		// Create a new enrollment
 		Enrollment enrollment = new Enrollment();
 		enrollment.setStudentName(enrollmentDTO.studentName());
 		enrollment.setStudentEmail(enrollmentDTO.studentEmail());
-		enrollment.setCourse(course);  // Associate the enrollment with the course
-		// Set other properties as needed
+		enrollment.setCourse(course);
 
-		// Save the enrollment to the database
 		enrollmentRepository.save(enrollment);
 		return enrollmentDTO;
-	}
 
+	}
 }
