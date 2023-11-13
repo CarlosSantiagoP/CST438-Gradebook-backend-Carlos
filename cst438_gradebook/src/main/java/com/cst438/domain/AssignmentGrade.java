@@ -12,19 +12,19 @@ public class AssignmentGrade {
 	@Id
 	@GeneratedValue(strategy=GenerationType.IDENTITY)
 	private int id;
-	
+
 	@ManyToOne
 	@JoinColumn(name="enrollment_id")
 	private Enrollment studentEnrollment;
-	
+
 	@ManyToOne
 	@JoinColumn(name="assignment_id")
 	private Assignment assignment;
-	
+
 	private Integer score;
-	
+
 	public AssignmentGrade() { }
-	
+
 	public AssignmentGrade(Assignment assignment, Enrollment enrollment) {
 		this.assignment = assignment;
 		this.studentEnrollment = enrollment;

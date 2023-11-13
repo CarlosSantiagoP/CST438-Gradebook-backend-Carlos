@@ -17,10 +17,10 @@ import com.cst438.domain.AssignmentGradeRepository;
 import com.cst438.domain.GradeDTO;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
-/* 
- * Example of using Junit 
+/*
+ * Example of using Junit
  * Mockmvc is used to test a simulated REST call to the RestController
- * This test assumes that students test4@csumb.edu, test@csumb.edu are enrolled in course 
+ * This test assumes that students test4@csumb.edu, test@csumb.edu are enrolled in course
  * with assignment with id=1
  */
 @SpringBootTest
@@ -29,11 +29,11 @@ public class JunitTestGradebook {
 
 	@Autowired
 	private MockMvc mvc;
-	
+
 	@Autowired
 	private AssignmentGradeRepository assignmentGradeRepository;
 
-	/* 
+	/*
 	 * Enter a new grade for student test4@csumb.edu for assignment id=1
 	 */
 	@Test
@@ -50,14 +50,14 @@ public class JunitTestGradebook {
 
 		// verify that returned data has non zero primary key
 		GradeDTO[] result = fromJsonString(response.getContentAsString(), GradeDTO[].class);
-		 
+
 		for (int i=0; i<result.length; i++) {
 			GradeDTO g = result[i];
 			if (g.email().equals("test4@csumb.edu")) {
 				// change grade from null to 80.
 				assertNull(g.grade());
 				result[i] = new GradeDTO(g.assignmentGradeId(), g.name(), g.email(), 80);
-				
+
 			}
 		}
 
@@ -72,10 +72,10 @@ public class JunitTestGradebook {
 		// verify that database assignmentGrade table was correctly updated
 		AssignmentGrade ag = assignmentGradeRepository.findByAssignmentIdAndStudentEmail(1,  "test4@csumb.edu");
 		assertEquals(80, ag.getScore());
-		
+
 	}
 
-	/* 
+	/*
 	 * Update existing grade of test@csumb.edu for assignment id=1 from 90 to 88.
 	 */
 	@Test
@@ -98,7 +98,7 @@ public class JunitTestGradebook {
 			if (g.email().equals("test@csumb.edu")) {
 				assertEquals(90, g.grade());
 				result[i] = new GradeDTO(g.assignmentGradeId(), g.name(), g.email(), 88);
-				
+
 			}
 		}
 
@@ -110,7 +110,7 @@ public class JunitTestGradebook {
 
 		// verify that return status = OK (value 200)
 		assertEquals(200, response.getStatus());
-		
+
 		AssignmentGrade ag = assignmentGradeRepository.findByAssignmentIdAndStudentEmail(1,  "test@csumb.edu");
 		assertEquals(88, ag.getScore());
 
@@ -133,5 +133,4 @@ public class JunitTestGradebook {
 			throw new RuntimeException(e);
 		}
 	}
-
 }

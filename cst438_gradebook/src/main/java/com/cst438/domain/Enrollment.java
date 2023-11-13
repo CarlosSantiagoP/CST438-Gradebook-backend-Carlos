@@ -13,18 +13,18 @@ import javax.persistence.OneToMany;
 
 @Entity
 public class Enrollment {
-	
+
 	@Id
 	@GeneratedValue(strategy=GenerationType.IDENTITY)
 	private int id;
-	
+
 	private String studentName;
 	private String studentEmail;
-	
+
 	@ManyToOne
 	@JoinColumn(name="course_id")
 	private Course course;
-	
+
 	@OneToMany(mappedBy="studentEnrollment")
 	List<AssignmentGrade> assignmentGrades;
 
@@ -60,6 +60,7 @@ public class Enrollment {
 		this.course = course;
 	}
 
+
 	public List<AssignmentGrade> getAssignmentGrades() {
 		return assignmentGrades;
 	}
@@ -73,6 +74,4 @@ public class Enrollment {
 		return "Enrollment [id=" + id + ", studentName=" + studentName + ", studentEmail=" + studentEmail + ", course="
 				+ course + "]";
 	}
-
-
 }

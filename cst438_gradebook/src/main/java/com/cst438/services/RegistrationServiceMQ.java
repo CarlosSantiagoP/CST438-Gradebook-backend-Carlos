@@ -18,6 +18,9 @@ import com.cst438.domain.EnrollmentDTO;
 import com.cst438.domain.EnrollmentRepository;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
+import java.util.List;
+import java.util.Optional;
+
 @Service
 @ConditionalOnProperty(prefix = "registration", name = "service", havingValue = "mq")
 public class RegistrationServiceMQ implements RegistrationService {
@@ -31,13 +34,12 @@ public class RegistrationServiceMQ implements RegistrationService {
 	@Autowired
 	private RabbitTemplate rabbitTemplate;
 
-
 	public RegistrationServiceMQ() {
 		System.out.println("MQ registration service ");
 	}
 
-
 	Queue registrationQueue = new Queue("registration-queue", true);
+
 	@Bean
 	Queue createQueue() {
 		return new Queue("gradebook-queue");
@@ -49,21 +51,24 @@ public class RegistrationServiceMQ implements RegistrationService {
 	@RabbitListener(queues = "gradebook-queue")
 	@Transactional
 	public void receive(String message) {
-		System.out.println("Gradebook has received: "+message);
-		EnrollmentDTO dto = fromJsonString(message, EnrollmentDTO.class);
-		System.out.println(dto.toString());
 
-		Course course = courseRepository.findById(dto.courseId()).orElse(null);
-		if (course==null) {
-			System.out.println("Error. Student add to course. course not found "+dto.toString());
-		} else {
-			Enrollment enrollment = new Enrollment();
-			enrollment.setCourse(course);
-			enrollment.setStudentEmail(dto.studentEmail());
-			enrollment.setStudentName(dto.studentName());
-			enrollmentRepository.save(enrollment);
-			System.out.println("End receive enrollment.");
+		System.out.println("Gradebook has received: " + message);
+
+		// deserialize message to EnrollmentDTO and update database
+		EnrollmentDTO e = fromJsonString(message, EnrollmentDTO.class);
+
+		// retrieve
+		Enrollment studentEnrollment = enrollmentRepository.findById(e.id()).orElse(null);
+
+		// update
+		if (studentEnrollment != null) {
+			studentEnrollment.setId(e.id());
+			studentEnrollment.setStudentName(e.studentName());
+			studentEnrollment.setStudentEmail(e.studentEmail());
 		}
+
+		// Save to database
+		enrollmentRepository.save(studentEnrollment);
 	}
 
 	/*
@@ -72,12 +77,11 @@ public class RegistrationServiceMQ implements RegistrationService {
 	@Override
 	public void sendFinalGrades(int course_id, FinalGradeDTO[] grades) {
 
-		System.out.println("Start sendFinalGrades "+course_id);
-		String message = asJsonString(grades);
-		System.out.println(message);
-		rabbitTemplate.convertAndSend(registrationQueue.getName(), message);
-		System.out.println("End sendFinalGrades ");
+		System.out.println("Start sendFinalGrades " + course_id);
 
+		// convert grades to JSON string and send to registration service
+		String data = asJsonString(grades);
+		rabbitTemplate.convertAndSend(registrationQueue.getName(), data);
 	}
 
 	private static String asJsonString(final Object obj) {
@@ -95,5 +99,4 @@ public class RegistrationServiceMQ implements RegistrationService {
 			throw new RuntimeException(e);
 		}
 	}
-
 }

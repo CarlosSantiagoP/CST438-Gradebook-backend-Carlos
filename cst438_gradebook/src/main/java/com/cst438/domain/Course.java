@@ -10,21 +10,21 @@ import javax.persistence.OrderBy;
 
 @Entity
 public class Course {
-	
+
 	@Id
 	private int course_id;
 	private String title;
 	private String instructor;
 	private int year;
 	private String semester;
-	
+
 	@OneToMany(mappedBy="course")
 	@OrderBy("studentName ASC")
 	List<Enrollment> enrollments = new ArrayList<>();
-	
+
 	@OneToMany(mappedBy="course")
 	List<Assignment> assignments = new ArrayList<>();
-	
+
 	public int getCourse_id() {
 		return course_id;
 	}
@@ -55,15 +55,15 @@ public class Course {
 	public void setSemester(String semester) {
 		this.semester = semester;
 	}
-	
-	
+
+
 	public List<Enrollment> getEnrollments() {
 		return enrollments;
 	}
 	public void setEnrollments(List<Enrollment> enrollments) {
 		this.enrollments = enrollments;
 	}
-	
+
 	public List<Assignment> getAssignments() {
 		return assignments;
 	}
@@ -75,5 +75,5 @@ public class Course {
 		return "Course [course_id=" + course_id + ", title=" + title + ", instructor=" + instructor + ", year=" + year
 				+ ", semester=" + semester + "]";
 	}
-	
+
 }
